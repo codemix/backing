@@ -9,8 +9,8 @@
   "dependencies": {
     "babel-runtime": "^6.5.0",
     "bluebird": "^3.2.2",
-    "garbage-collector": "^1.0.0",
-    "malloc": "^1.0.0",
+    "garbage-collector": "^1.1.0",
+    "malloc": "^1.1.0",
     "mkdirp": "^0.5.1",
     "mmap.js": "^1.0.1"
   },
@@ -29,7 +29,6 @@
     "babel-register": "^6.5.2",
     "flow-bin": "^0.21.0",
     "isparta": "^4.0.0",
-    "malloc": "^1.0.0",
     "mocha": "^2.3.3",
     "random-js": "^1.0.8",
     "rimraf": "^2.5.1",
