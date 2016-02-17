@@ -12,7 +12,8 @@
     "garbage-collector": "^1.1.0",
     "malloc": "^1.1.0",
     "mkdirp": "^0.5.1",
-    "mmap.js": "^1.0.1"
+    "mmap.js": "^1.0.1",
+    "type-registry": "0.0.1"
   },
   "devDependencies": {
     "babel-cli": "^6.5.1",
