@@ -2,6 +2,8 @@ coverage
 .settings
 node_modules
 lib
+data
+lib-legacy
 npm-debug.log
 *.cfg
 code.asm
