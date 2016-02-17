@@ -58,6 +58,9 @@ export default class ArrayBufferArenaSource {
    * Initialize the arena source.
    */
   constructor (backing: Backing, config: ArenaSourceConfig) {
+    if (typeof config.dirname === 'string' && config.dirname.length) {
+      throw new TypeError('ArrayBufferArenaSource does not support "dirname".');
+    }
     this.backing = backing;
     this.name = backing.name;
     this.arenas = backing.arenas;
@@ -94,7 +97,9 @@ export default class ArrayBufferArenaSource {
       }
     });
 
-    this.arenas.push(...this.buffers.map(buffer => this.loadSync(buffer)));
+    for (let buffer of this.buffers) {
+      this.arenas.push(await this.load(buffer));
+    }
 
     trace: `Loaded ${this.arenas.length} arena(s).`;
 

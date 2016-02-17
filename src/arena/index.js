@@ -3,7 +3,7 @@
 import Allocator from "malloc";
 import GarbageCollector from "garbage-collector";
 
-import type {CallbackList} from "./arena-sources";
+import type {CallbackList} from "../arena-sources";
 
 
 export type ArenaConfig = {

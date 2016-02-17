@@ -3,22 +3,99 @@ import rimraf from "rimraf";
 import Bluebird from "bluebird";
 
 const rm = Bluebird.promisify(rimraf);
-import {Backing} from "../src";
+import {Backing} from "./";
 import TypeRegistry from "type-registry";
-import randomNumbers from "./random.json";
+import randomNumbers from "../test/random.json";
+import ArrayBufferArenaSource from "./arena-sources/array-buffer";
+import {Arena} from "./arena";
 
 const benchmark = createBenchmark();
 
 ensureDeterministicRandom();
 
+const ARENA_SIZE = 1 * 1024 * 1024;
+
+describe('Backing', function () {
+  let backing;
+  describe('.constructor()', function () {
+    it('should create an arena source from a function', function () {
+      backing = new Backing({
+        name: `test_backing`,
+        arenaSize: ARENA_SIZE,
+        arenaSource (backing) {
+          return new ArrayBufferArenaSource(backing, {
+            lifetime: 2
+          });
+        }
+      });
+    });
+  });
+
+  describe('.init()', function () {
+    it('should initialize the backing', async function () {
+      await backing.init();
+    });
+
+    it('should not initialize the backing twice', async function () {
+      let threw = false;
+      try {
+        await backing.init();
+      }
+      catch (e) {
+        threw = true;
+      }
+      threw.should.equal(true);
+    });
+  });
+
+  describe('.arenaFor()', function () {
+    let address;
+    it('should allocate some bytes', function () {
+      address = backing.alloc(64);
+    });
+
+    it('should access the arena for an address', function () {
+      backing.arenaFor(address).should.be.an.instanceOf(Arena);
+    });
+
+    it('should throw if we try and access a too-low address', function () {
+      (() => backing.arenaFor(-34)).should.throw(RangeError);
+    });
+
+    it('should throw if we try and access a too-high address', function () {
+      (() => backing.arenaFor(999999999)).should.throw(RangeError);
+    });
+  });
+
+  describe('.alloc()', function () {
+    it('should normalize a too-small allocation size', function () {
+      const address = backing.alloc(3);
+      backing.sizeOf(address).should.equal(16);
+      backing.free(address).should.equal(16);
+    });
+  });
+});
+
 ['array-buffer', 'mmap'].forEach(function (type) {
   describe(`Backing: ${type}`, function () {
     const DIRNAME = path.resolve(__dirname, '..', 'data', `test${type}`);
-    const ARENA_SIZE = 1 * 1024 * 1024;
     const registry = new TypeRegistry();
 
     let backing;
     const options = {};
+
+    const mmapArenaSourceConfig = {
+      type: type,
+      dirname: DIRNAME,
+      lifetime: 2
+    };
+
+    const arrayBufferArenaSourceConfig = {
+      type: type,
+      lifetime: 2
+    };
+
+    const arenaSourceConfig = type === 'mmap' ? mmapArenaSourceConfig : arrayBufferArenaSourceConfig;
 
     before(async () => {
       try {
@@ -28,15 +105,12 @@ ensureDeterministicRandom();
       }
       catch (e) {}
 
+
       backing = new Backing({
         name: `test_${type}`,
         arenaSize: ARENA_SIZE,
         registry: registry,
-        arenaSource: {
-          type: type,
-          dirname: DIRNAME,
-          lifetime: 2
-        }
+        arenaSource: arenaSourceConfig
       });
       options.backing = backing;
       await backing.init();
@@ -47,6 +121,7 @@ ensureDeterministicRandom();
         await rm(DIRNAME);
       }
       backing = null;
+      /* istanbul ignore if  */
       if (typeof gc === 'function') {
         gc();
       }
@@ -57,11 +132,7 @@ ensureDeterministicRandom();
         const instance = new Backing({
           name: `test2_${type}`,
           arenaSize: ARENA_SIZE,
-          arenaSource: {
-            type: type,
-            dirname: DIRNAME,
-            lifetime: 2
-          }
+          arenaSource: arenaSourceConfig
         });
 
         instance.registry.should.be.an.instanceOf(TypeRegistry);
@@ -81,149 +152,219 @@ ensureDeterministicRandom();
     describe('.getXYZ and .setXYZ methods.', function () {
 
       describe('int8', function () {
-        let address;
+        let first, second;
         before(() => {
-          address = backing.alloc(32);
+          first = backing.alloc(ARENA_SIZE / 2);
+          second = backing.alloc(ARENA_SIZE / 2);
+        });
+
+        after(() => {
+          backing.free(first);
+          backing.free(second);
         });
 
         it('should write a value to an address', function () {
-          backing.setInt8(address, Math.pow(2, 7) - 1);
+          backing.setInt8(first, Math.pow(2, 7) - 1);
+          backing.setInt8(second, Math.pow(2, 7) - 1);
         });
 
         it('should read a value from an address', function () {
-          backing.getInt8(address).should.equal(Math.pow(2, 7) - 1);
+          backing.getInt8(first).should.equal(Math.pow(2, 7) - 1);
+          backing.getInt8(second).should.equal(Math.pow(2, 7) - 1);
         });
 
 
         it('should write a negative value to an address', function () {
-          backing.setInt8(address, -(Math.pow(2, 7) - 1));
+          backing.setInt8(first, -(Math.pow(2, 7) - 1));
+          backing.setInt8(second, -(Math.pow(2, 7) - 1));
         });
 
         it('should read a negative value from an address', function () {
-          backing.getInt8(address).should.equal(-(Math.pow(2, 7) - 1));
+          backing.getInt8(first).should.equal(-(Math.pow(2, 7) - 1));
+          backing.getInt8(second).should.equal(-(Math.pow(2, 7) - 1));
         });
       });
 
       describe('uint8', function () {
-        let address;
+        let first, second;
         before(() => {
-          address = backing.alloc(32);
+          first = backing.alloc(ARENA_SIZE / 2);
+          second = backing.alloc(ARENA_SIZE / 2);
+        });
+
+        after(() => {
+          backing.free(first);
+          backing.free(second);
         });
 
         it('should write a value to an address', function () {
-          backing.setUint8(address, Math.pow(2, 8) - 1);
+          backing.setUint8(first, Math.pow(2, 8) - 1);
+          backing.setUint8(second, Math.pow(2, 8) - 1);
         });
 
         it('should read a value from an address', function () {
-          backing.getUint8(address).should.equal(Math.pow(2, 8) - 1);
+          backing.getUint8(first).should.equal(Math.pow(2, 8) - 1);
+          backing.getUint8(second).should.equal(Math.pow(2, 8) - 1);
         });
       });
 
       describe('int16', function () {
-        let address;
+        let first, second;
         before(() => {
-          address = backing.alloc(32);
+          first = backing.alloc(ARENA_SIZE / 2);
+          second = backing.alloc(ARENA_SIZE / 2);
+        });
+
+        after(() => {
+          backing.free(first);
+          backing.free(second);
         });
 
         it('should write a value to an address', function () {
-          backing.setInt16(address, Math.pow(2, 15) - 1);
+          backing.setInt16(first, Math.pow(2, 15) - 1);
+          backing.setInt16(second, Math.pow(2, 15) - 1);
         });
 
         it('should read a value from an address', function () {
-          backing.getInt16(address).should.equal(Math.pow(2, 15) - 1);
+          backing.getInt16(first).should.equal(Math.pow(2, 15) - 1);
+          backing.getInt16(second).should.equal(Math.pow(2, 15) - 1);
         });
 
 
         it('should write a negative value to an address', function () {
-          backing.setInt16(address, -(Math.pow(2, 15) - 1));
+          backing.setInt16(first, -(Math.pow(2, 15) - 1));
+          backing.setInt16(second, -(Math.pow(2, 15) - 1));
         });
 
         it('should read a negative value from an address', function () {
-          backing.getInt16(address).should.equal(-(Math.pow(2, 15) - 1));
+          backing.getInt16(first).should.equal(-(Math.pow(2, 15) - 1));
+          backing.getInt16(second).should.equal(-(Math.pow(2, 15) - 1));
         });
       });
 
       describe('uint16', function () {
-        let address;
+        let first, second;
         before(() => {
-          address = backing.alloc(32);
+          first = backing.alloc(ARENA_SIZE / 2);
+          second = backing.alloc(ARENA_SIZE / 2);
+        });
+
+        after(() => {
+          backing.free(first);
+          backing.free(second);
         });
 
         it('should write a value to an address', function () {
-          backing.setUint16(address, Math.pow(2, 16) - 1);
+          backing.setUint16(first, Math.pow(2, 16) - 1);
+          backing.setUint16(second, Math.pow(2, 16) - 1);
         });
 
         it('should read a value from an address', function () {
-          backing.getUint16(address).should.equal(Math.pow(2, 16) - 1);
+          backing.getUint16(first).should.equal(Math.pow(2, 16) - 1);
+          backing.getUint16(second).should.equal(Math.pow(2, 16) - 1);
         });
       });
 
       describe('int32', function () {
-        let address;
+        let first, second;
         before(() => {
-          address = backing.alloc(32);
+          first = backing.alloc(ARENA_SIZE / 2);
+          second = backing.alloc(ARENA_SIZE / 2);
+        });
+
+        after(() => {
+          backing.free(first);
+          backing.free(second);
         });
 
         it('should write a value to an address', function () {
-          backing.setInt32(address, Math.pow(2, 31) - 1);
+          backing.setInt32(first, Math.pow(2, 31) - 1);
+          backing.setInt32(second, Math.pow(2, 31) - 1);
         });
 
         it('should read a value from an address', function () {
-          backing.getInt32(address).should.equal(Math.pow(2, 31) - 1);
+          backing.getInt32(first).should.equal(Math.pow(2, 31) - 1);
+          backing.getInt32(second).should.equal(Math.pow(2, 31) - 1);
         });
 
 
         it('should write a negative value to an address', function () {
-          backing.setInt32(address, -(Math.pow(2, 31) - 1));
+          backing.setInt32(first, -(Math.pow(2, 31) - 1));
+          backing.setInt32(second, -(Math.pow(2, 31) - 1));
         });
 
         it('should read a negative value from an address', function () {
-          backing.getInt32(address).should.equal(-(Math.pow(2, 31) - 1));
+          backing.getInt32(first).should.equal(-(Math.pow(2, 31) - 1));
+          backing.getInt32(second).should.equal(-(Math.pow(2, 31) - 1));
         });
       });
 
       describe('uint32', function () {
-        let address;
+        let first, second;
         before(() => {
-          address = backing.alloc(32);
+          first = backing.alloc(ARENA_SIZE / 2);
+          second = backing.alloc(ARENA_SIZE / 2);
+        });
+
+        after(() => {
+          backing.free(first);
+          backing.free(second);
         });
 
         it('should write a value to an address', function () {
-          backing.setUint32(address, Math.pow(2, 32) - 1);
+          backing.setUint32(first, Math.pow(2, 32) - 1);
+          backing.setUint32(second, Math.pow(2, 32) - 1);
         });
 
         it('should read a value from an address', function () {
-          backing.getUint32(address).should.equal(Math.pow(2, 32) - 1);
+          backing.getUint32(first).should.equal(Math.pow(2, 32) - 1);
+          backing.getUint32(second).should.equal(Math.pow(2, 32) - 1);
         });
       });
 
       describe('float32', function () {
-        let address;
+        let first, second;
         before(() => {
-          address = backing.alloc(32);
+          first = backing.alloc(ARENA_SIZE / 2);
+          second = backing.alloc(ARENA_SIZE / 2);
+        });
+
+        after(() => {
+          backing.free(first);
+          backing.free(second);
         });
 
         it('should write a value to an address', function () {
-          backing.setFloat32(address, 123.456);
+          backing.setFloat32(first, 123.456);
+          backing.setFloat32(second, 123.456);
         });
 
         it('should read a value from an address', function () {
-          Math.fround(backing.getFloat32(address)).should.equal(Math.fround(123.456));
+          Math.fround(backing.getFloat32(first)).should.equal(Math.fround(123.456));
+          Math.fround(backing.getFloat32(second)).should.equal(Math.fround(123.456));
         });
       });
 
       describe('float64', function () {
-        let address;
+        let first, second;
         before(() => {
-          address = backing.alloc(32);
+          first = backing.alloc(ARENA_SIZE / 2);
+          second = backing.alloc(ARENA_SIZE / 2);
+        });
+
+        after(() => {
+          backing.free(first);
+          backing.free(second);
         });
 
         it('should write a value to an address', function () {
-          backing.setFloat64(address, 123.456);
+          backing.setFloat64(first, 123.456);
+          backing.setFloat64(second, 123.456);
         });
 
         it('should read a value from an address', function () {
-          backing.getFloat64(address).should.equal(123.456);
+          backing.getFloat64(first).should.equal(123.456);
+          backing.getFloat64(second).should.equal(123.456);
         });
       });
 
@@ -387,6 +528,7 @@ ensureDeterministicRandom();
           name: 'uint32',
           cleanup (backing, address) {
             const pointer = backing.getFloat64(address);
+            /* istanbul ignore else  */
             if (pointer !== 0) {
               backing.gc.unref(pointer);
               backing.setFloat64(address, 0);
@@ -450,6 +592,7 @@ ensureDeterministicRandom();
       });
     });
 
+    /* istanbul ignore else  */
     if (!process.env.BLOCKSTORE_FAST_TESTS) {
       // Warning: Increasing the number of mutations has an exponential effect on test time.
       mutate(options, [
@@ -463,6 +606,7 @@ ensureDeterministicRandom();
       ]);
     }
 
+    /* istanbul ignore next  */
     (process.env.NODE_ENV !== "production" ? describe.skip : describe)('Benchmarks', function () {
       benchmark('alloc, sizeOf & free', 100000, {
         default () {
@@ -489,10 +633,12 @@ ensureDeterministicRandom();
 });
 
 
+/* istanbul ignore next  */
 function d (input) {
   console.log(JSON.stringify(input, null, 2));
 }
 
+/* istanbul ignore next  */
 function permutations (input: Array) {
   if (input.length == 0) {
     return [[]];
@@ -510,10 +656,12 @@ function permutations (input: Array) {
   return result;
 }
 
+/* istanbul ignore next  */
 function debugOnce (input) {
   return [input];
 }
 
+/* istanbul ignore next  */
 function createBenchmark () {
 
   function benchmark (name, limit, ...fns) {
@@ -604,6 +752,7 @@ function ensureDeterministicRandom () {
   };
 }
 
+/* istanbul ignore next  */
 function mutate (options, input: number[]) {
   //debugOnce([128, 64, 256, 128, 256, 96, 72]).forEach(sizes => {
 

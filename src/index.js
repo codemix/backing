@@ -364,6 +364,7 @@ export class Backing {
     const arena: Arena = this.arenaSource.createSync();
 
     const offset: uint32 = arena.alloc(numberOfBytes);
+    /* istanbul ignore if  */
     if (offset === 0) {
       throw new Error(`Could not allocate ${numberOfBytes} within new arena ${arena.sequenceNumber}`);
     }
@@ -375,9 +376,6 @@ export class Backing {
    */
   calloc (numberOfBytes: uint32): float64 {
     const address: float64 = this.alloc(numberOfBytes);
-    if (address === 0) {
-      return 0;
-    }
     const arena: Arena = this.arenaFor(address);
     const uint32Array: Uint32Array = arena.uint32Array;
     const offset = (address - arena.startAddress) >> 2;
@@ -392,10 +390,7 @@ export class Backing {
    * Return the size of the block at the given address.
    */
   sizeOf (address: float64): uint32 {
-    const arena: ?Arena = this.arenaFor(address);
-    if (!arena) {
-      return 0;
-    }
+    const arena: Arena = this.arenaFor(address);
     const offset: uint32 = this.offsetFor(address);
     return arena.allocator.sizeOf(offset);
   }
@@ -406,11 +401,7 @@ export class Backing {
   free (address: float64): uint32 {
     trace: `Freeing address: ${address}.`;
 
-    const arena: ?Arena = this.arenaFor(address);
-    if (!arena) {
-      throw new Error(`Cannot free address ${address}, no such arena.`);
-    }
-
+    const arena: Arena = this.arenaFor(address);
     const offset: uint32 = this.offsetFor(address);
 
     return arena.free(offset);
@@ -442,6 +433,8 @@ function verifyHeader (backing: Backing) {
     backing.getUint32(HEADER_CHECKSUM_ADDRESS) !== HEADER_CHECKSUM_ADDRESS
   ) {
     const address = backing.calloc(HEADER_SIZE);
+
+    /* istanbul ignore if  */
     if (address !== HEADER_ADDRESS) {
       throw new TypeError(`Allocator returned an invalid backing header address.`);
     }

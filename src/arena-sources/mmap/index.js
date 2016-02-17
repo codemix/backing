@@ -266,8 +266,10 @@ function sequenceNumberForFilename (filename: string): uint32 {
 
 /**
  * Compare two filenames based on their sequence number.
+ *
+ * Note: Exported for testing purposes only.
  */
-function byFileSequenceNumber (a: string, b: string): number {
+export function byFileSequenceNumber (a: string, b: string): number {
   const aSeq: number = sequenceNumberForFilename(a);
   const bSeq: number = sequenceNumberForFilename(b);
   if (aSeq > bSeq) {
@@ -277,6 +279,6 @@ function byFileSequenceNumber (a: string, b: string): number {
     return -1;
   }
   else {
-    return 0;
+    throw new Error(`Duplicate arena sequence numbers detected.`);
   }
 }

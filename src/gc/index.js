@@ -1,8 +1,8 @@
 /* @flow */
 
-import {Arena} from "./arena";
+import {Arena} from "../arena";
 import type {Type} from "type-registry";
-import type {Backing} from "./";
+import type {Backing} from "../";
 
 export class AggregateGarbageCollector {
 
@@ -59,6 +59,7 @@ export class AggregateGarbageCollector {
     const arena: Arena = backing.arenaSource.createSync();
 
     const offset: uint32 = arena.gc.alloc(numberOfBytes);
+    /* istanbul ignore if  */
     if (offset === 0) {
       throw new Error(`Could not allocate ${numberOfBytes} within new arena ${arena.sequenceNumber}`);
     }
@@ -94,6 +95,7 @@ export class AggregateGarbageCollector {
     const arena: Arena = backing.arenaSource.createSync();
 
     const offset: uint32 = arena.gc.calloc(numberOfBytes);
+    /* istanbul ignore if */
     if (offset === 0) {
       throw new Error(`Could not allocate ${numberOfBytes} within new arena ${arena.sequenceNumber}.`);
     }
@@ -106,10 +108,7 @@ export class AggregateGarbageCollector {
   sizeOf (address: float64): uint32 {
     const backing = this.backing;
 
-    const arena: ?Arena = backing.arenaFor(address);
-    if (!arena) {
-      return 0;
-    }
+    const arena: Arena = backing.arenaFor(address);
     const offset: uint32 = backing.offsetFor(address);
     return arena.gc.sizeOf(offset);
   }
@@ -120,10 +119,7 @@ export class AggregateGarbageCollector {
   typeOf (address: float64): ?Type {
     const backing = this.backing;
 
-    const arena: ?Arena = backing.arenaFor(address);
-    if (!arena) {
-      return undefined;
-    }
+    const arena: Arena = backing.arenaFor(address);
     const offset: uint32 = backing.offsetFor(address);
     const typeId = arena.gc.typeOf(offset);
     if (typeId === 0) {
@@ -140,10 +136,7 @@ export class AggregateGarbageCollector {
   ref (address: float64): uint32 {
     const backing = this.backing;
 
-    const arena: ?Arena = backing.arenaFor(address);
-    if (!arena) {
-      return 0;
-    }
+    const arena: Arena = backing.arenaFor(address);
     const offset: uint32 = backing.offsetFor(address);
     return arena.gc.ref(offset);
   }
@@ -154,10 +147,7 @@ export class AggregateGarbageCollector {
   unref (address: float64): uint32 {
     const backing = this.backing;
 
-    const arena: ?Arena = backing.arenaFor(address);
-    if (!arena) {
-      return 0;
-    }
+    const arena: Arena = backing.arenaFor(address);
     const offset: uint32 = backing.offsetFor(address);
     return arena.gc.unref(offset);
   }
@@ -170,11 +160,7 @@ export class AggregateGarbageCollector {
     trace: `Freeing address: ${address}.`;
     const backing = this.backing;
 
-    const arena: ?Arena = backing.arenaFor(address);
-    if (!arena) {
-      throw new Error(`Cannot free address ${address}, no such arena.`);
-    }
-
+    const arena: Arena = backing.arenaFor(address);
     const offset: uint32 = backing.offsetFor(address);
 
     return arena.gc.free(offset);
