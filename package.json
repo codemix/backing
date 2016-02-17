@@ -1,0 +1,68 @@
+{
+  "name": "backing",
+  "version": "0.0.1",
+  "description": "Provides a virtual address space for large, persistent segments of memory via ArrayBuffers, and methods for allocating and freeing within it, optionally via a simple reference counting garbage collector.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "babel-runtime": "^6.5.0",
+    "bluebird": "^3.2.2",
+    "garbage-collector": "^1.0.0",
+    "malloc": "^1.0.0",
+    "mkdirp": "^0.5.1",
+    "mmap.js": "^1.0.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.5.1",
+    "babel-core": "^6.5.1",
+    "babel-plugin-contracts": "^1.1.1",
+    "babel-plugin-trace": "^1.0.0",
+    "babel-plugin-transform-async-to-module-method": "^6.5.0",
+    "babel-plugin-transform-runtime": "^6.5.2",
+    "babel-polyfill": "^6.5.0",
+    "babel-preset-es2015": "^6.5.0",
+    "babel-preset-es2015-node5": "^1.1.2",
+    "babel-preset-react": "^6.5.0",
+    "babel-preset-stage-0": "^6.5.0",
+    "babel-register": "^6.5.2",
+    "flow-bin": "^0.21.0",
+    "isparta": "^4.0.0",
+    "malloc": "^1.0.0",
+    "mocha": "^2.3.3",
+    "random-js": "^1.0.8",
+    "rimraf": "^2.5.1",
+    "should": "^7.1.1"
+  },
+  "scripts": {
+    "prepublish": "NODE_ENV=production npm run build && npm run build-legacy",
+    "test": "flow check && mocha --max-old-space-size=8192 --expose-gc",
+    "watch": "mocha --watch --max-old-space-size=8192 --expose-gc --bail",
+    "build": "babel -d ./lib ./src",
+    "build-legacy": "NODE_ENV=legacy babel -d ./lib-legacy ./src",
+    "perf": "rm *.cfg; NODE_ENV=production npm run build && node --max-inlined-source-size=2000 --print-opt-code --trace-hydrogen --trace-phase=Z --trace-deopt --code-comments --hydrogen-track-positions --redirect-code-traces --redirect-code-traces-to=code.asm ./perf.js",
+    "coverage": "NODE_ENV=coverage babel-node node_modules/isparta/bin/isparta cover --report text --report html node_modules/mocha/bin/_mocha -- --reporter dot --bail",
+    "flow": "flow check"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codemix/backing.git"
+  },
+  "keywords": [
+    "backing store",
+    "mmap",
+    "backing",
+    "database",
+    "garbage collector",
+    "buffer",
+    "memory management",
+    "memory"
+  ],
+  "author": "Charles Pick <charles@codemix.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/codemix/backing/issues"
+  },
+  "homepage": "https://github.com/codemix/backing#readme"
+}

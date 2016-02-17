@@ -1,0 +1,18 @@
+{
+  "presets": [
+    "es2015-node5",
+    "stage-0",
+    "react"
+  ],
+  "plugins": [],
+  "passPerPreset": true,
+  "env": {
+    "legacy": {
+      "presets": ["es2015", "stage-0", "react"],
+      "plugins": [
+        "transform-runtime"
+      ],
+      "passPerPreset": true
+    }
+  }
+}
