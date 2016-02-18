@@ -4,7 +4,7 @@ try {
   require("babel-register")();
 }
 catch (e) {
-  console.log('Using legacy ES environment.', e.stack);
+  console.log('Using legacy ES environment.');
   // Legacy environment.
   require("babel-register")({
     "presets": ["es2015", "stage-0", "react"],
