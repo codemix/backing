@@ -522,11 +522,11 @@ describe('Backing', function () {
 
       describe('lifecycle', function () {
         let address1, address2;
-        let invokedCleanup = false;
+        let invokedDestructor = false;
         registry.add({
           id: 1,
           name: 'uint32',
-          cleanup (backing, address) {
+          destructor (backing, address) {
             const pointer = backing.getFloat64(address);
             /* istanbul ignore else  */
             if (pointer !== 0) {
@@ -539,8 +539,8 @@ describe('Backing', function () {
         registry.add({
           id: 2,
           name: 'thing',
-          cleanup (backing, address) {
-            invokedCleanup = true;
+          destructor (backing, address) {
+            invokedDestructor = true;
           }
         });
 
@@ -584,10 +584,10 @@ describe('Backing', function () {
         });
 
         it('should cycle again, freeing the second address', function () {
-          invokedCleanup.should.equal(false);
+          invokedDestructor.should.equal(false);
           backing.gc.cycle().should.equal(24 + 16);
-          invokedCleanup.should.equal(true);
-          invokedCleanup = false;
+          invokedDestructor.should.equal(true);
+          invokedDestructor = false;
         });
       });
     });

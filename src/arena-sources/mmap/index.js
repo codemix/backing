@@ -89,17 +89,17 @@ export default class MMapArenaSource {
     const backing = this.backing;
 
     for (const type of backing.registry) {
-      if (typeof type.cleanup === 'function') {
+      if (typeof type.destructor === 'function') {
         this.gcCallbacks[type.id] = (address: float64): void => {
-          type.cleanup(backing, address);
+          type.destructor(backing, address);
         };
       }
     }
 
     backing.registry.on('add', type => {
-      if (typeof type.cleanup === 'function') {
+      if (typeof type.destructor === 'function') {
         this.gcCallbacks[type.id] = (address: float64): void => {
-          type.cleanup(backing, address);
+          type.destructor(backing, address);
         };
       }
     });

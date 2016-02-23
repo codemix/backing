@@ -5,12 +5,12 @@ describe(`ArrayBufferArenaSource`, function () {
   const ARENA_SIZE = 1 * 1024 * 1024;
   const registry = new TypeRegistry();
   const buffers = [];
-  let cleanupInvoked = 0;
+  let destructorInvoked = 0;
   const Thing = {
     id: 123,
     name: 'Thing',
-    cleanup () {
-      cleanupInvoked++;
+    destructor () {
+      destructorInvoked++;
     }
   };
 
@@ -100,14 +100,14 @@ describe(`ArrayBufferArenaSource`, function () {
     });
 
     it('should perform 2 gc cycles', function () {
-      cleanupInvoked.should.equal(0);
+      destructorInvoked.should.equal(0);
       backing.gc.cycle();
-      cleanupInvoked.should.equal(0);
+      destructorInvoked.should.equal(0);
       backing.gc.cycle();
     });
 
-    it('should have invoked the cleanup', function () {
-      cleanupInvoked.should.equal(1);
+    it('should have invoked the destructor', function () {
+      destructorInvoked.should.equal(1);
     });
 
   });

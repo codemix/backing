@@ -5,12 +5,12 @@ describe(`GC`, function () {
   const ARENA_SIZE = 1 * 1024 * 1024;
   const registry = new TypeRegistry();
   const buffers = [];
-  let cleanupInvoked = 0;
+  let destructorInvoked = 0;
   const Thing = {
     id: 123,
     name: 'Thing',
-    cleanup () {
-      cleanupInvoked++;
+    destructor () {
+      destructorInvoked++;
     }
   };
   registry.add(Thing);
