@@ -9,7 +9,7 @@
   "dependencies": {
     "babel-runtime": "^6.5.0",
     "bluebird": "^3.2.2",
-    "garbage-collector": "^1.1.0",
+    "garbage-collector": "^1.2.0",
     "malloc": "^1.1.0",
     "mkdirp": "^0.5.1",
     "mmap.js": "^1.0.1",

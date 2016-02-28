@@ -554,6 +554,10 @@ describe('Backing', function () {
           address1 = backing.gc.alloc(16, 1);
         });
 
+        it('should have refCount of zero', function () {
+          backing.gc.refCount(address1).should.equal(0);
+        });
+
         it('should read the size of the address', function () {
           backing.gc.sizeOf(address1).should.equal(16);
         });
@@ -566,9 +570,17 @@ describe('Backing', function () {
           address2 = backing.gc.alloc(24, 2);
         });
 
+        it('the second address should have refCount of zero', function () {
+          backing.gc.refCount(address2).should.equal(0);
+        });
+
         it('should add a reference to the second address from the first', function () {
           backing.setFloat64(address1, address2);
           backing.gc.ref(address2);
+        });
+
+        it('should have refCount of 1', function () {
+          backing.gc.refCount(address2).should.equal(1);
         });
 
         it('should perform a garbage collection cycle, but collect nothing', function () {

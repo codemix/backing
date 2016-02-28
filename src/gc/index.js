@@ -103,6 +103,18 @@ export class AggregateGarbageCollector {
   }
 
   /**
+   * Return the reference count of the block at the given address.
+   */
+  refCount (address: float64): uint32 {
+    const backing = this.backing;
+
+    const arena: Arena = backing.arenaFor(address);
+    const offset: uint32 = backing.offsetFor(address);
+    return arena.gc.refCount(offset);
+  }
+
+
+  /**
    * Return the size of the block at the given address.
    */
   sizeOf (address: float64): uint32 {
