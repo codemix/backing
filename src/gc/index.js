@@ -33,7 +33,7 @@ export class AggregateGarbageCollector {
    * Allocate the given number of bytes from the first arena which has enough space.
    * If no arenas have the capacity, a new arena will be created.
    */
-  alloc (numberOfBytes: uint32, typeId: uint32 = 0): float64 {
+  alloc (numberOfBytes: uint32, typeId: uint32 = 0, refCount: uint32 = 0): float64 {
     trace: `Allocating ${numberOfBytes} bytes.`;
     const backing = this.backing;
 
@@ -50,7 +50,7 @@ export class AggregateGarbageCollector {
     const arenas: Arena[] = backing.arenas;
 
     for (let i = 0; i < arenas.length; i++) {
-      const offset: uint32 = arenas[i].gc.alloc(numberOfBytes, typeId);
+      const offset: uint32 = arenas[i].gc.alloc(numberOfBytes, typeId, refCount);
       if (offset !== 0) {
         return arenas[i].startAddress + offset;
       }
@@ -69,7 +69,7 @@ export class AggregateGarbageCollector {
   /**
    * Allocate and clear the given number of bytes and return the address.
    */
-  calloc (numberOfBytes: uint32, typeId: uint32 = 0): float64 {
+  calloc (numberOfBytes: uint32, typeId: uint32 = 0, refCount: uint32 = 0): float64 {
     trace: `Allocating and clearing ${numberOfBytes} bytes.`;
     const backing = this.backing;
 
@@ -86,7 +86,7 @@ export class AggregateGarbageCollector {
     const arenas: Arena[] = backing.arenas;
 
     for (let i = 0; i < arenas.length; i++) {
-      const offset: uint32 = arenas[i].gc.calloc(numberOfBytes, typeId);
+      const offset: uint32 = arenas[i].gc.calloc(numberOfBytes, typeId, refCount);
       if (offset !== 0) {
         return arenas[i].startAddress + offset;
       }
