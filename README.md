@@ -22,15 +22,15 @@ import Backing from "backing";
 
 const store = new Backing({
   name: "demo",
-  arenaManager: {
+  /**
+   * The number of bytes which will be preallocated at a time.
+   * Note that this imposes an upper bound on the largest possible
+   * size of a block in the store.
+   * On the server you should usually set this to the largest permissible value: 2Gb.
+   */
+  arenaSize: 16 * 1024 * 1024, // 16Mb
+  arenaSource: {
     type: 'mmap', // Can also be 'array-buffer'
-    /**
-     * The number of bytes which will be preallocated at a time.
-     * Note that this imposes an upper bound on the largest possible
-     * size of a block in the store.
-     * On the server you should usually set this to the largest permissible value: 2Gb.
-     */
-    arenaSize: 16 * 1024 * 1024, // 16Mb
     /**
      * The full path to the directory containing the data files.
      */
