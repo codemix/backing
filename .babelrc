@@ -4,13 +4,16 @@
     "stage-0",
     "react"
   ],
-  "plugins": [],
+  "plugins": [
+    ["transform-async-to-module-method", {"module": "bluebird", "method": "coroutine"}]
+  ],
   "passPerPreset": true,
   "env": {
     "legacy": {
       "presets": ["es2015", "stage-0", "react"],
       "plugins": [
-        "transform-runtime"
+        "transform-runtime",
+        ["transform-async-to-module-method", {"module": "bluebird", "method": "coroutine"}]
       ],
       "passPerPreset": true
     }
