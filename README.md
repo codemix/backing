@@ -21,7 +21,7 @@ npm install backing
 import Backing from "backing";
 
 const store = new Backing({
-  id: "demo",
+  name: "demo",
   arenaManager: {
     type: 'mmap', // Can also be 'array-buffer'
     /**
