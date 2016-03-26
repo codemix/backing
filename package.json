@@ -1,6 +1,6 @@
 {
   "name": "backing",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Provides a virtual address space for large, persistent segments of memory via ArrayBuffers, and methods for allocating and freeing within it, optionally via a simple reference counting garbage collector.",
   "main": "index.js",
   "directories": {
@@ -13,7 +13,7 @@
     "malloc": "^1.1.0",
     "mkdirp": "^0.5.1",
     "mmap.js": "^1.0.1",
-    "type-registry": "0.0.2"
+    "type-registry": "0.1.0"
   },
   "devDependencies": {
     "babel-cli": "^6.5.1",

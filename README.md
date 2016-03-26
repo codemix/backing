@@ -8,6 +8,8 @@ Provides a virtual address space for large segments of memory via ArrayBuffers, 
 within the address space, optionally via a simple reference counting garbage collector.
 These large segments of data can optionally be automatically persisted to disk, (and shared with other processes!) via [mmap](https://github.com/indutny/mmap.js).
 
+For related work which builds on top of this see [reign](https://github.com/codemix/reign) - a persistent, typed objects system.
+
 ## Installation
 
 Install via [npm](https://npmjs.org/package/backing).
