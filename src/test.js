@@ -368,6 +368,32 @@ describe('Backing', function () {
         });
       });
 
+
+      describe('utf8', function () {
+        let first, second;
+        let firstInput = "hello world";
+        let secondInput = `ᚠᛇᚻ᛫ᛒᛦᚦ᛫ᚠᚱᚩᚠᚢᚱ᛫ᚠᛁᚱᚪ᛫ᚷᛖᚻᚹᛦᛚᚳᚢᛗ ᛋᚳᛖᚪᛚ᛫ᚦᛖᚪᚻ᛫ᛗᚪᚾᚾᚪ᛫ᚷᛖᚻᚹᛦᛚᚳ᛫ᛗᛁᚳᛚᚢᚾ᛫ᚻᛦᛏ᛫ᛞᚫᛚᚪᚾ ᚷᛁᚠ᛫ᚻᛖ᛫ᚹᛁᛚᛖ᛫ᚠᚩᚱ᛫ᛞᚱᛁᚻᛏᚾᛖ᛫ᛞᚩᛗᛖᛋ᛫ᚻᛚᛇᛏᚪᚾ᛬`;
+        before(() => {
+          first = backing.alloc(ARENA_SIZE / 2);
+          second = backing.alloc(ARENA_SIZE / 2);
+        });
+
+        after(() => {
+          backing.free(first);
+          backing.free(second);
+        });
+
+        it('should write a value to an address', function () {
+          backing.setUtf8(first, firstInput);
+          backing.setUtf8(second, secondInput);
+        });
+
+        it('should read a value from an address', function () {
+          backing.getUtf8(first, backing.utf8ByteLength(firstInput)).should.equal(firstInput);
+          backing.getUtf8(second, backing.utf8ByteLength(secondInput)).should.equal(secondInput);
+        });
+      });
+
     });
 
     describe('.alloc(), .sizeOf() and .free()', function () {

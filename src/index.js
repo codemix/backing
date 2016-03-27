@@ -7,6 +7,7 @@ import {AggregateGarbageCollector} from "./gc";
 import ArrayBufferArenaSource from "./arena-sources/array-buffer";
 import MMapArenaSource from "./arena-sources/mmap";
 import TypeRegistry from "type-registry";
+import {write as writeUtf8, read as readUtf8, byteLength as byteLengthUtf8} from "./utf8";
 
 import type {ArenaSource, ArenaSourceConfig} from "./arena-sources";
 
@@ -326,6 +327,49 @@ export class Backing {
     else {
       this.arenas[(address / this.arenaSize) >> 0].float64Array[(address % this.arenaSize) >> 3] = value;
     }
+  }
+
+  /**
+   * Read the given number of utf8 bytes from the given address.
+   */
+  getUtf8 (address: float64, numberOfBytes: uint32): string {
+    if (typeof numberOfBytes !== 'number') {
+      throw new TypeError(`Cannot getUtf8() without specifying a number of bytes to read.`);
+    }
+    let arena, offset;
+    if (address < this.arenaSize) {
+      arena = this.arenas[0];
+      offset = address;
+    }
+    else {
+      arena = this.arenas[(address / this.arenaSize) >> 0];
+      offset = address % this.arenaSize;
+    }
+
+    return readUtf8(arena.uint8Array, offset, offset + numberOfBytes);
+  }
+
+  /**
+   * Write the given utf8 string to the given address.
+   */
+  setUtf8 (address: float64, input: string): void {
+    let arena, offset;
+    if (address < this.arenaSize) {
+      arena = this.arenas[0];
+      offset = address;
+    }
+    else {
+      arena = this.arenas[(address / this.arenaSize) >> 0];
+      offset = address % this.arenaSize;
+    }
+    writeUtf8(arena.uint8Array, offset, input);
+  }
+
+  /**
+   * Return the number of bytes required to represent the given string.
+   */
+  utf8ByteLength (input: string): number {
+    return byteLengthUtf8(input);
   }
 
   /**
